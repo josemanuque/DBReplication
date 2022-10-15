@@ -86,11 +86,11 @@ begin
 end;
 $$;
 
-create or replace procedure INBIO.insertar_gathering(gathering_id int, gathering_date date, gathering_responsible_id int, site_id int)
+create or replace procedure INBIO.insertar_gathering(gathering_id int, gathering_date varchar, gathering_responsible_id int, site_id int)
 language plpgsql
 as $$
 begin
-    insert into INBIO.gathering values(gathering_id,gathering_date,gathering_responsible_id,site_id)
+    insert into INBIO.gathering values(gathering_id,to_date(gathering_date, 'DD-MM-YYYY'),gathering_responsible_id,site_id)
     on conflict do nothing;
 end;
 $$;
@@ -108,27 +108,33 @@ declare
     gathering_temp_id int;
 begin
     for row in cur loop
-        insert into INBIO.taxon values(row.taxon_id,row.kingdom_name,row.phylum_division_name,row.class_name,row.order_name,row.family_name,row.genus_name,row.species_name,row.scientific_name)
-        on conflict do nothing;
+        call INBIO.insertar_taxon(row.taxon_id,row.kingdom_name,row.phylum_division_name,row.class_name,row.order_name,row.family_name,row.genus_name,row.species_name,row.scientific_name);
+        
         insert into INBIO.gathering_responsible(name) values(row.gathering_responsible)
         on conflict do nothing;
+
         select gathering_responsible_id into gathering_temp_id from INBIO.gathering_responsible where name = row.gathering_responsible;
         
         insert into INBIO.site values(row.site_id,row.latitude,row.longitude,row.site_description)
         on conflict do nothing;
-        insert into INBIO.gathering values(gathering_temp_id,to_date(row.gathering_date, 'DD-MM-YYYY'),gathering_temp_id,row.site_id)
-        on conflict do nothing;
-        insert into INBIO.specimen values(row.specimen_id,row.taxon_id,gathering_temp_id,row.specimen_description,row.specimen_cost)
-        on conflict do nothing;
+        
+        call INBIO.insertar_gathering(gathering_temp_id,row.gathering_date,gathering_temp_id,row.site_id);
+
+        call INBIO.insertar_specimen(row.specimen_id,row.taxon_id,gathering_temp_id,row.specimen_description,row.specimen_cost);
     end loop;
 end;
 $$;
 
-call inbio.normalize();
+-- Insert from csv file into temp table
 
-call INBIO.insertar_gathering(1,'2019-01-01',1,1);
 copy INBIO.temp from 'C:\temp.csv' with (format csv, header true, delimiter '|');
 
+-- Call the procedure to normalize the data
+
+call inbio.normalize();
+
+-- Tests
+call INBIO.insertar_gathering(1,'2019-01-01',1,1);
 
 insert into INBIO.gathering_responsible (name) values('Hola')
         on conflict do nothing;
@@ -136,6 +142,8 @@ insert into INBIO.gathering_responsible (name) values('Hola')
 select gathering_Responsible_id from INBIO.gathering_responsible where name = 'Hola';
 
 truncate table INBIO.temp;
+
+-- Selects 
 select * from INBIO.gathering_responsible;
 select * from INBIO.taxon;
 select * from INBIO.site;
