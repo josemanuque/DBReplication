@@ -13,7 +13,6 @@ create table INBIO.taxon(
     genus_name varchar(50),
     species_name varchar(100),
     scientific_name varchar(100)
-
 );
 
 create table INBIO.gathering_responsible(
@@ -38,7 +37,7 @@ drop table inbio.taxon;
 
 drop table inbio.specimen;
 create table INBIO.specimen(
-    Specimen_ID int primary key,
+    specimen_id int primary key,
     taxon_id int,
     gathering_id int REFERENCES INBIO.gathering(gathering_id),
     specimen_description text,
