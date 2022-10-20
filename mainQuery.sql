@@ -11,8 +11,8 @@ create table INBIO.taxon(
     order_name varchar(50),
     family_name varchar(50),
     genus_name varchar(50),
-    species_name varchar(50),
-    scientific_name varchar(50)
+    species_name varchar(100),
+    scientific_name varchar(100)
 
 );
 
@@ -25,7 +25,7 @@ create table INBIO.site(
     site_id int primary key,
     latitude float not NULL,
     longitude float not NULL,
-    site_description varchar(500) not NULL
+    site_description text
 );
 
 create table INBIO.gathering(
@@ -34,12 +34,14 @@ create table INBIO.gathering(
     gathering_Responsible_id int references INBIO.Gathering_Responsible(gathering_Responsible_id),
     site_id int references INBIO.site(site_id)
 );
+drop table inbio.taxon;
 
+drop table inbio.specimen;
 create table INBIO.specimen(
     Specimen_ID int primary key,
     taxon_id int,
     gathering_id int REFERENCES INBIO.gathering(gathering_id),
-    specimen_description varchar(10000) not null,
+    specimen_description text,
     specimen_cost float not null 
 );
 
@@ -59,11 +61,11 @@ create table INBIO.temp(
     site_id int,
     latitude float,
     longitude float,
-    site_description varchar(10000),
-    specimen_description varchar(10000),
+    site_description text,
+    specimen_description text,
     specimen_cost float
 );
-
+drop table INBIO.temp
 
 -- Procedures to insert into tables
 
@@ -127,7 +129,7 @@ $$;
 
 -- Insert from csv file into temp table
 
-copy INBIO.temp from 'C:\temp.csv' with (format csv, header true, delimiter '|');
+copy INBIO.temp from 'C:\source.csv' with (format csv, header true, delimiter '|');
 
 -- Call the procedure to normalize the data
 
