@@ -212,3 +212,21 @@ BEGIN
 	end loop;
 	
 END $$;
+
+
+call inbio.normalize();
+select * from inbio.temp where kingdom_name != 'Plantae';
+
+select s.specimen_id,si.*,t.*,g.*,gr.*,count(s.Specimen_ID) as specimen_count,sum(s.specimen_cost) as cost_sum FROM 
+inbio.site si, inbio.taxon t, inbio.gathering g, inbio.gathering_responsible gr, inbio.specimen s
+where t.taxon_id=s.taxon_id 
+and g.gathering_id=s.gathering_id 
+and gr.gathering_responsible_id=g.gathering_responsible_id
+and g.site_id=si.site_id
+group by s.specimen_id,si.site_id, t.taxon_id, g.gathering_id, gr.gathering_responsible_id;
+
+select * from inbio.temp;
+
+call INBIO.insertar_facts();
+
+select count(*) from inbio.specimen_fact;

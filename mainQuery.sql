@@ -33,12 +33,10 @@ create table INBIO.gathering(
     gathering_Responsible_id int references INBIO.Gathering_Responsible(gathering_Responsible_id),
     site_id int references INBIO.site(site_id)
 );
-drop table inbio.taxon;
 
-drop table inbio.specimen;
 create table INBIO.specimen(
     specimen_id int primary key,
-    taxon_id int,
+    taxon_id int references INBIO.taxon(taxon_id),
     gathering_id int REFERENCES INBIO.gathering(gathering_id),
     specimen_description text,
     specimen_cost float not null 
@@ -47,9 +45,9 @@ create table INBIO.specimen(
 create table INBIO.temp(
     specimen_id int,
     taxon_id int,
-    gathering_date varchar(10),
-    kingdom_name varchar(50),
-    phylum_division_name varchar(50),
+    gathering_date varchar(20),
+    kingdom_name varchar(100),
+    phylum_division_name varchar(100),
     class_name varchar(50),
     order_name varchar(50),
     family_name varchar(50),
@@ -64,7 +62,6 @@ create table INBIO.temp(
     specimen_description text,
     specimen_cost float
 );
-drop table INBIO.temp
 
 -- Procedures to insert into tables
 
@@ -111,8 +108,7 @@ begin
     for row in cur loop
         call INBIO.insertar_taxon(row.taxon_id,row.kingdom_name,row.phylum_division_name,row.class_name,row.order_name,row.family_name,row.genus_name,row.species_name,row.scientific_name);
         
-        insert into INBIO.gathering_responsible(name) values(row.gathering_responsible)
-        on conflict do nothing;
+        insert into INBIO.gathering_responsible(name) values(row.gathering_responsible);
 
         select gathering_responsible_id into gathering_temp_id from INBIO.gathering_responsible where name = row.gathering_responsible;
         
@@ -128,7 +124,7 @@ $$;
 
 -- Insert from csv file into temp table
 
-copy INBIO.temp from 'C:\source.csv' with (format csv, header true, delimiter '|');
+copy INBIO.temp from 'C:\source.csv' with (format csv, header true, delimiter '|', quote '\');
 
 -- Call the procedure to normalize the data
 
