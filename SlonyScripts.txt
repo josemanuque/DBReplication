@@ -20,11 +20,11 @@ slonik slave.txt
 
 cd C:\Program Files\PostgreSQL\11\bin
 
-slon Cluster_Replication "dbname=MainDB user=jm password=Basad0."
+slon Cluster_Replication "dbname=MainDB user=jm password=."
 
 
 ------- Open another CMD for slave DB:
 
 cd C:\Program Files\PostgreSQL\11\bin
 
-slon Cluster_Replication "dbname=CloneDB user=jm password=Basad0."
+slon Cluster_Replication "dbname=CloneDB user=jm password=."
